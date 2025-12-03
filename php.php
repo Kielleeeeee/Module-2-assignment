@@ -1,3 +1,27 @@
+<?php
+declare(strict_types=1);
+
+$tax_rate = 20;
+
+$products = [
+    "Sisig Dagis"      => [499.99, 10],
+    "Water Lily Chips" => [299.99, 5],
+];
+
+function get_reorder_message(int $stock): string {
+    return ($stock < 10) ? "Yes" : "No";
+}
+function get_total_value(float $price, int $qty): float {
+    return round($price * $qty, 2);
+}
+
+function get_tax_due(float $price, int $qty, int $tax_rate = 0): float {
+    $total_value = $price * $qty;
+    $tax_amount = $total_value * ($tax_rate / 100);
+    return round($tax_amount, 2);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,47 +31,41 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <?php
-    include("header.php");
 
-    // Products
-    $products = [
-        ["Sisig Dagis", 499.99, 10],
-        ["Water Lily Chips", 299.99, 5]
-    ];
+<?php include 'header.php'; ?>
 
-    $discount = 0.10; // 10% discount
+<main class="product">
+    <h2>Product Inventory</h2>
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Stock</th>
+                <th>Reorder?</th>
+                <th>Total Value</th>
+                <th>Tax Due</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($products as $name => $data): ?>
+                <?php
+                    $price = $data[0];
+                    $stock = $data[1];
+                ?>
+                <tr>
+                    <td><?= htmlspecialchars($name) ?></td>
+                    <td><?= $stock ?></td>
+                    <td><?= get_reorder_message($stock) ?></td>
+                    <td>₱<?= number_format(get_total_value($price, $stock), 2) ?></td>
+                    <td>₱<?= number_format(get_tax_due($price, $stock, $tax_rate), 2) 
+                    ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 
-    foreach ($products as $item) {
-        $name = $item[0];
-        $price = $item[1];
-        $stock = $item[2];
-
-        // Conditional logic
-        if ($stock > 8) {
-            $finalPrice = $price - ($price * $discount);
-            $status = "<span class='highlight'>Discounted!</span>";
-        } elseif ($stock == 0) {
-            $finalPrice = $price;
-            $status = "<span class='out'>Out of Stock</span>";
-        } else {
-            $finalPrice = $price;
-            $status = "Available";
-        }
-
-        echo "<div class='product'>";
-        echo "<h2>$name</h2>";
-        echo "<p>Price: ₱" . number_format($finalPrice, 2) . "</p>";
-        echo "<p>Stock: $stock</p>";
-        echo "<p>Status: $status</p>";
-        echo "</div>";
-    }
-
-    // Combo deal
-    $combo = $products[0][0] . " & " . $products[1][0];
-    echo "<p class='combo'>Special Combo Deal: <strong>$combo</strong></p>";
-
-    include("footer.php");
-    ?>
+</main>
+<?php include 'footer.php'; ?>
 </body>
 </html>
